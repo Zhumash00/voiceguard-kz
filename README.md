@@ -4,44 +4,11 @@
 
 > Зерттеу прототипі: телефон алаяқтығын немесе адамның шынайы тұлғасын тікелей анықтамайды. Модель қателесуі мүмкін. Өз нәтижелеріңізді тәуелсіз деректерде тексеріңіз.
 
-## 1. Жылдам іске қосу (Windows 10/11)
-
-1. **Python 3.10–3.12** және **FFmpeg** орнатыңыз. `python --version` және `ffmpeg -version` командалары жұмыс істеуі тиіс. FFmpeg-ті Windows PATH-қа қосыңыз.
-2. ZIP архивті ашып, `install.bat` файлын іске қосыңыз. Ол `.venv` виртуалды ортасын жасап, кітапханаларды және **AASIST ONNX** нейрожелісін жүктейді (интернет керек). 1.6 МБ шамасындағы модель `models/aasist.onnx` файлына түседі.
-3. `start.bat` файлын іске қосыңыз.
-4. Браузерде **http://127.0.0.1:8000** ашыңыз.
-5. WAV, MP3, FLAC, OGG, M4A, AAC, OPUS, WEBM жүктеп, **«Нейрожелімен тексеру»** түймесін басыңыз.
-
-Егер `.bat` іске қосылмаса, PowerShell ішінде:
-
-```powershell
-cd voiceguard_site
-py -3 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe scripts\download_model.py
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-Басқа жүйеде `python3 -m venv .venv && source .venv/bin/activate`, әрі қарай `pip install -r requirements.txt; python scripts/download_model.py; uvicorn app.main:app ...`.
-
-**Маңызды:** модель файлы ZIP-ке кірмейді, өйткені осы құрастыру ортасында сыртқы модель салмақтарын жүктеу мүмкін болмады. Алғашқы орнату кезінде желіден алынады. Салмақтар болмаған жағдайда сайт нәтижені **ойдан шығармайды** және «модель дайын емес» хабарламасын көрсетеді.
-
-## 2. Іске асырылған жұмыс логикасы
-
-```
-Браузер → аудио файл → FastAPI
-        → FFmpeg: mono / 16000 Hz / алғашқы 30 сек
-        → 4.0375 сек ұзындықтағы 1–6 аудио фрагмент
-        → AASIST ONNX (нақты нейрожелі) → [spoof, bona fide] logits
-        → әр фрагменттегі softmax(spoof) бағаларының орташа мәні
-        → 0.5 эксперименттік шек → «синтетикалық» / «табиғи» белгілер
-```
-
 AASIST — *Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attention Networks*. Ол raw waveform-ты өңдейді, spectro-temporal graph attention архитектурасы бар. Пайдаланылған pretrained checkpoint бастапқыда **ASVspoof 2019 LA** деректерінде оқытылған, ал ONNX нұсқасы [SpeechAntiSpoofingBenchmarks/AASIST](https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST) репозиторийінен алынады. **0.5 шегі ғылыми калибрлеуден өткен шешім емес**; көрсетілген пайыз — модельдің softmax бағасы, шынайы статистикалық ықтималдық не кепілдік емес. Бірнеше фрагмент бағасын орташалау — осы сайттың зерттеу тәсілі; ол ресми benchmark scoring процедурасын дәл қайталамайды.
 
 Модель карточкасында өзге домендердегі қателіктер көрсетілген: ASVspoof 2019 LA EER 0.83%, ASVspoof 2021 DF EER 17.04%, InTheWild EER 43.01%. Бұл жүйенің нақты қоңырауларда автоматты сенімді екенін **дәлелдемейді**. Дереккөз: https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST.
 
-## 3. Құжаттағы деректер базалары (dataset)
+## Құжаттағы деректер базалары (dataset)
 
 | Деректер | Сілтеме | Қолданылуы |
 |---|---|---|
@@ -54,7 +21,7 @@ AASIST — *Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attentio
 
 ASVspoof 2021 DF — ресми бағалау дерегі; оны AASIST 2019 LA бағасын тексеруге **тәуелсіз тест** ретінде қолданған дұрыс. Деректердің өлшемі үлкен болуы мүмкін, сайттың zip файлында олар жоқ. Дереккөздер: [ASVspoof 2021 ресми беті](https://www.asvspoof.org/index2021.html), [ASVspoof 2021 evaluation repo](https://github.com/asvspoof-challenge/2021).
 
-## 4. Өз CNN моделіңізді деректермен оқыту (міндетті емес)
+## Өз CNN моделіңізді деректермен оқыту (міндетті емес)
 
 Осы сайтта жеке **Mel-spectrogram → CNN → Real/Fake** моделін үйрету құралы да бар. Ол дайын AASIST-пен салыстыру жүргізуге жарайды, бірақ сапасын өлшеу міндетті.
 
@@ -77,7 +44,7 @@ python scripts/train_cnn.py --train data/train.csv --dev data/dev.csv --epochs 8
 
 Нәтиже `models/custom_cnn.pt` файлына сақталады. Сайтты қайта қосқаннан кейін модель таңдау тізімінен **Mel-CNN** таңдауға болады. Бұл қарапайым baseline; ғылыми нәтижесі алдын ала белгісіз. Train/dev/test бір аудионы бөліспеуі керек; мүмкіндігінше speaker және generator бойынша leakage-ке тексеріңіз. Болашақта network codec augmentation және unseen-generator split қосуға болады.
 
-## 5. Тәуелсіз бағалау / EER
+## Тәуелсіз бағалау / EER
 
 Егер тест деректерін `data/test.csv` түрінде дайындасаңыз:
 
@@ -87,7 +54,7 @@ python scripts/evaluate.py --manifest data/test.csv --model aasist --scores-out 
 
 Скрипт **accuracy, precision, recall, F1** және екі класс болса **EER** есептейді. Оқу/валидация және тест жиындары толық бөлек болуы керек. EER бір threshold бойынша accuracy-ге тең емес.
 
-## 6. API
+## API
 
 - `GET /` — веб-интерфейс
 - `GET /api/status` — модельдің дайындығы және FFmpeg жағдайы
@@ -96,7 +63,7 @@ python scripts/evaluate.py --manifest data/test.csv --model aasist --scores-out 
 
 Файл шегі 20 МБ, алғашқы 30 секунд ғана талданады. Аудио серверде файлға жазылмайды, сұраныс кезінде жедел жадта өңделеді. Сервер интернетке аудио жібермейді. Қолданбаға сырттан қолжетімділік ашпаңыз: ол бұл нұсқада аутентификация/рейт-лимитсіз локал зерттеу жүйесі (`127.0.0.1`).
 
-## 7. Жоба құрылымы
+## Жоба құрылымы
 
 ```
 voiceguard_site/
@@ -121,7 +88,7 @@ voiceguard_site/
   start.bat
 ```
 
-## 8. Ғылыми дереккөздер
+## Ғылыми дереккөздер
 
 - Jung et al. — **AASIST**, https://arxiv.org/abs/2110.01200
 - Pretrained AASIST ONNX https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST
