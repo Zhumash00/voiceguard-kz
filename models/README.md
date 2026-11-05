@@ -1,3 +1,3 @@
-Put your SpoofCeleb-trained MelCNN-v1 model at models/spoofceleb_cnn.pt.
-Do not rename ASVspoof pretrained model to this filename: the server checks training metadata.
-SpoofCeleb data is NOT included and must be obtained with the dataset authors' permission.
+AASIST: python scripts/download_model.py -> models/aasist.onnx
+Whisper Tiny: python scripts/download_language_model.py -> models/whisper-tiny/
+The trained model weights are not in Git; Docker downloads the models at build time.
