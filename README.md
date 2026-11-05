@@ -1,152 +1,143 @@
+# VoiceGuard KZ v2 — Docker, тіл және уақыттық дәлелдер
+
+**Жаңа:** Dockerfile + Docker Compose, Whisper Tiny арқылы болжамды тілді тану, AASIST бағаларының секундтық аралықтары және ықтимал паузалар/дыбыс деңгейінің өзгеруі. Толық әрі жаңартылған іске қосу нұсқаулығы: **[DOCKER_RENDER_KZ.md](DOCKER_RENDER_KZ.md)**.
+
+**Ескерту:** аудионың синтетикалық екені нейрожелінің уақыттық ұпайлары арқылы бағаланады. Пауза мен динамика — тек бөлек өлшенген сипаттамалар; олар модель шешімінің нақты себептерін дәлелдемейді. 30 секундтық шек сақталады. Тіл анықтау моделі бөлек жұмыс істейді және қателесуі мүмкін.
+
+**Docker арқылы бастау:** `docker compose up --build -d`, сосын http://localhost:8000. Docker image жинау үшін интернет қажет.
+
 ---
-title: VoiceGuard KZ — SpoofCeleb
-emoji: 🎙️
-colorFrom: teal
-colorTo: gray
-sdk: docker
-app_port: 7860
-short_description: SpoofCeleb деректерінде оқытылатын нейрожелімен дауыстық дипфейкті анықтау
----
 
-# VoiceGuard KZ — SpoofCeleb нұсқасы
+# VoiceGuard KZ — нейрожелі арқылы дауыстық дипфейкті анықтайтын сайт
 
-Бұл жобада веб-сайт **тек SpoofCeleb деректерінде оқытылған Mel-CNN моделін** пайдалануға бейімделген.
-Аудионы WAV/MP3/FLAC/... түрінде жүктеп, табиғи (`bonafide`) немесе синтетикалық (`spoof`) белгісін
-бағалауға болады. **Нақты оқытылған модель файлдары архивке кірмейді.**
-Жалған жауап немесе кездейсоқ пайыз қайтарылмайды: checkpoint жоқ болса сайтта **«модель дайын емес»** деп көрсетіледі.
+**Мақсаты:** телефон алаяқтығынан қорғау контексінде табиғи (bona fide) және жасанды (spoof/deepfake) сөйлеуді зерттеу үшін дайын веб-прототип. Сайт аудио файлды қабылдап, нақты **AASIST** нейрожелісімен бағалайды. Жалған «демо анықтау» не кездейсоқ пайыз шығармайды.
 
-## 1. Неге деректер архивке енгізілмеген?
+> Зерттеу прототипі: телефон алаяқтығын немесе адамның шынайы тұлғасын тікелей анықтамайды. Модель қателесуі мүмкін. Өз нәтижелеріңізді тәуелсіз деректерде тексеріңіз.
 
-Ресми SpoofCeleb dataset: https://huggingface.co/datasets/jungjee/spoofceleb
+## 1. Жылдам іске қосу (Windows 10/11)
 
-SpoofCeleb **gated**: авторлар қолжетімділік сұранысын қабылдап, университетке тиесілі
-email қолдануды сұрайды; рұқсат бірнеше күн ішінде қаралуы мүмкін.
-Деректер өте үлкен. ZIP ішінде SpoofCeleb аудио жазбалары да, оның орнына
-жасалған жасанды жазбалар да жоқ. Тек өзіңіз рұқсатпен алған деректерді пайдаланыңыз.
+1. **Python 3.10–3.12** және **FFmpeg** орнатыңыз. `python --version` және `ffmpeg -version` командалары жұмыс істеуі тиіс. FFmpeg-ті Windows PATH-қа қосыңыз.
+2. ZIP архивті ашып, `install.bat` файлын іске қосыңыз. Ол `.venv` виртуалды ортасын жасап, кітапханаларды және **AASIST ONNX** нейрожелісін жүктейді (интернет керек). 1.6 МБ шамасындағы модель `models/aasist.onnx` файлына түседі.
+3. `start.bat` файлын іске қосыңыз.
+4. Браузерде **http://127.0.0.1:8000** ашыңыз.
+5. WAV, MP3, FLAC, OGG, M4A, AAC, OPUS, WEBM жүктеп, **«Нейрожелімен тексеру»** түймесін басыңыз.
 
-Деректер ғылыми мақала: https://doi.org/10.1109/OJSP.2025.3529377
-
-## 2. Windows-та орнату
-
-- Python 3.10–3.12 және `FFmpeg` (`ffmpeg -version`) орнатыңыз.
-- `install.bat` іске қосыңыз. Қажетті кітапханалар (PyTorch, librosa, FastAPI) орнатылады.
-- Linux/Mac: `python -m pip install -r requirements-train.txt`.
-- Сайтты қазір ашуға болады (`start.bat`), бірақ **модель оқытылмайынша талдамайды**.
-
-## 3. SpoofCeleb-ті дайындау
-
-Рұқсатпен жүктелген деректерді шығарып, мысалы мына бумаларға орналастырыңыз:
-
-```
-data/spoofceleb/
-  flac/
-    train/.../*.flac
-    development/.../*.flac
-    evaluation/.../*.flac
-  metadata/
-    train.csv
-    development.csv
-    evaluation.csv
-```
-
-**Назар аударыңыз:** бұл — бағдарлама қабылдайтын каталог үлгісі.
-Ресми файлдарда жол/баған атаулары өзгеше болса, `--metadata`, `--path-column`,
-`--label-column` параметрлері арқылы нақты бағандарды көрсетіңіз.
-Кестеде аудиоға апаратын `path` және `bonafide`/`spoof` белгілері болуы керек.
-
-Теңгерімді шағын үлгі дайындау (әр кластан ең көбі 1000 аудио):
+Егер `.bat` іске қосылмаса, PowerShell ішінде:
 
 ```powershell
-python scripts/prepare_spoofceleb.py --root data/spoofceleb --split train --out data/train.csv --limit-per-class 1000
-python scripts/prepare_spoofceleb.py --root data/spoofceleb --split development --out data/dev.csv --limit-per-class 300
-python scripts/prepare_spoofceleb.py --root data/spoofceleb --split evaluation --out data/test.csv --limit-per-class 300
+cd voiceguard_site
+py -3 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe scripts\download_model.py
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Егер metadata-да `audio_file` және `is_spoof` сияқты басқа бағандар қолданылса, тиісті
-`--path-column audio_file --label-column is_spoof` беруге болады,
-бірақ `is_spoof` мәндері `spoof`/`bonafide` немесе `1`/`0` болуы тиіс.
-`--limit-per-class 0` — барлық файлдар (үлкен ресурстар қажет).
-**Тек қолжетімді файлдар manifest-ке кіреді**; көрсетілген жолдағы файлдардың бәрі бар екенін тексеріңіз.
+Басқа жүйеде `python3 -m venv .venv && source .venv/bin/activate`, әрі қарай `pip install -r requirements.txt; python scripts/download_model.py; uvicorn app.main:app ...`.
 
-## 4. Нақты нейрожеліні оқыту
+**Маңызды:** модель файлы ZIP-ке кірмейді, өйткені осы құрастыру ортасында сыртқы модель салмақтарын жүктеу мүмкін болмады. Алғашқы орнату кезінде желіден алынады. Салмақтар болмаған жағдайда сайт нәтижені **ойдан шығармайды** және «модель дайын емес» хабарламасын көрсетеді.
+
+## 2. Іске асырылған жұмыс логикасы
+
+```
+Браузер → аудио файл → FastAPI
+        → FFmpeg: mono / 16000 Hz / алғашқы 30 сек
+        → 4.0375 сек ұзындықтағы 1–8 аудио фрагмент
+        → AASIST ONNX (нақты нейрожелі) → [spoof, bona fide] logits
+        → әр фрагменттегі softmax(spoof) бағаларының орташа мәні
+        → 0.5 эксперименттік шек → «синтетикалық» / «табиғи» белгілер
+```
+
+AASIST — *Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attention Networks*. Ол raw waveform-ты өңдейді, spectro-temporal graph attention архитектурасы бар. Пайдаланылған pretrained checkpoint бастапқыда **ASVspoof 2019 LA** деректерінде оқытылған, ал ONNX нұсқасы [SpeechAntiSpoofingBenchmarks/AASIST](https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST) репозиторийінен алынады. **0.5 шегі ғылыми калибрлеуден өткен шешім емес**; көрсетілген пайыз — модельдің softmax бағасы, шынайы статистикалық ықтималдық не кепілдік емес. Бірнеше фрагмент бағасын орташалау — осы сайттың зерттеу тәсілі; ол ресми benchmark scoring процедурасын дәл қайталамайды.
+
+Модель карточкасында өзге домендердегі қателіктер көрсетілген: ASVspoof 2019 LA EER 0.83%, ASVspoof 2021 DF EER 17.04%, InTheWild EER 43.01%. Бұл жүйенің нақты қоңырауларда автоматты сенімді екенін **дәлелдемейді**. Дереккөз: https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST.
+
+## 3. Құжаттағы деректер базалары (dataset)
+
+| Деректер | Сілтеме | Қолданылуы |
+|---|---|---|
+| **ASVspoof 2019** | https://zenodo.org/records/6906306 | AASIST pretrained baseline (LA); жеке CNN-ді train/dev оқыту |
+| **ASVspoof 2021 LA** | https://zenodo.org/records/4837263 | Телефон арнасына ұқсас кодтау / LA қосымша бағалау |
+| **ASVspoof 2021 PA** | https://zenodo.org/records/4834716 | Replay spoofing сценарийлері (жеке міндет) |
+| **ASVspoof 2021 DF** | https://zenodo.org/records/4835108 | Deepfake **evaluation** және cross-domain тексеру |
+| **SpoofCeleb** | https://huggingface.co/datasets/jungjee/spoofceleb | In-the-wild speech негізіндегі қосымша эксперимент |
+| **VoxCeleb** | https://www.robots.ox.ac.uk/~vgg/data/voxceleb/ | SpoofCeleb бастапқы real-world speech деректері |
+
+ASVspoof 2021 DF — ресми бағалау дерегі; оны AASIST 2019 LA бағасын тексеруге **тәуелсіз тест** ретінде қолданған дұрыс. Деректердің өлшемі үлкен болуы мүмкін, сайттың zip файлында олар жоқ. Дереккөздер: [ASVspoof 2021 ресми беті](https://www.asvspoof.org/index2021.html), [ASVspoof 2021 evaluation repo](https://github.com/asvspoof-challenge/2021).
+
+## 4. Өз CNN моделіңізді деректермен оқыту (міндетті емес)
+
+Осы сайтта жеке **Mel-spectrogram → CNN → Real/Fake** моделін үйрету құралы да бар. Ол дайын AASIST-пен салыстыру жүргізуге жарайды, бірақ сапасын өлшеу міндетті.
+
+1. `pip install -r requirements-train.txt` (torch, librosa, scikit-learn т.б.).
+2. ASVspoof 2019 LA `train` және `dev` FLAC файлдарын бөлек жүктеңіз; official protocol files-ын сақтаңыз.
+3. Protocol-дан CSV жинаңыз:
 
 ```powershell
-python scripts/train_spoofceleb.py --train data/train.csv --dev data/dev.csv --epochs 8 --batch 16
+python scripts/make_manifest.py --protocol data/ASVspoof2019.LA.cm.train.trn.txt --audio-dir data/LA/ASVspoof2019_LA_train/flac --output data/train.csv
+python scripts/make_manifest.py --protocol data/ASVspoof2019.LA.cm.dev.trl.txt --audio-dir data/LA/ASVspoof2019_LA_dev/flac --output data/dev.csv
 ```
 
-Шығыс: `models/spoofceleb_cnn.pt` (PyTorch state_dict және dataset метадеректері).
+CSV форматы: `path,label,utterance_id`; мұнда `0=bonafide`, `1=spoof` және `path` — нақты аудионың толық жолы. `--audio-dir` нақты архивтің FLAC қалтасына сәйкес келуі тиіс.
 
-- Белгі кодтары: **0 = bonafide**, **1 = spoof**.
-- Модель: `16 kHz аудио → Mel-спектрограмма → CNN → 2 логит`.
-- GPU болса PyTorch оны пайдаланады. CPU-да оқыту баяу болуы мүмкін.
-- `train` және `development` файлдарын араластырмаңыз.
-- Dev F1 мәні — **тест нәтижесі емес** және сенімділік кепілдігі емес.
-- 1000+1000 шағын үлгі — кодты іске қосуға арналған ғана; толық ғылыми нәтиже үшін көбірек және әртүрлі дерек керек.
-- Үлкен корпуста сөйлеуші және TTS генераторларының train/test арасында ақпарат тасымалдауын тексеріңіз.
-
-## 5. Веб-сайтты іске қосу
+4. Жеке CNN-ді оқыту:
 
 ```powershell
-start.bat
+python scripts/train_cnn.py --train data/train.csv --dev data/dev.csv --epochs 8
 ```
 
-Немесе:
+Нәтиже `models/custom_cnn.pt` файлына сақталады. Сайтты қайта қосқаннан кейін модель таңдау тізімінен **Mel-CNN** таңдауға болады. Бұл қарапайым baseline; ғылыми нәтижесі алдын ала белгісіз. Train/dev/test бір аудионы бөліспеуі керек; мүмкіндігінше speaker және generator бойынша leakage-ке тексеріңіз. Болашақта network codec augmentation және unseen-generator split қосуға болады.
+
+## 5. Тәуелсіз бағалау / EER
+
+Егер тест деректерін `data/test.csv` түрінде дайындасаңыз:
 
 ```powershell
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+python scripts/evaluate.py --manifest data/test.csv --model aasist --scores-out data/scores.csv
 ```
 
-Браузер: **http://127.0.0.1:8000**.
+Скрипт **accuracy, precision, recall, F1** және екі класс болса **EER** есептейді. Оқу/валидация және тест жиындары толық бөлек болуы керек. EER бір threshold бойынша accuracy-ге тең емес.
 
-Сервер: FastAPI, модель: SpoofCeleb Mel-CNN, аудио өңдеу: FFmpeg.
+## 6. API
 
-`GET /api/status` сайттың дайындық күйін көрсетеді.
-`POST /api/analyze` аудио + `model=spoofceleb` қабылдайды.
+- `GET /` — веб-интерфейс
+- `GET /api/status` — модельдің дайындығы және FFmpeg жағдайы
+- `POST /api/analyze` — `multipart/form-data`: `file` (аудио), `model` (`aasist` немесе `cnn`)
+- `GET /api/docs` — Swagger интерфейсі
 
-Егер checkpoint жоқ болса, сервер нәтижені ойдан шығармайды.
+Файл шегі 20 МБ, алғашқы 30 секунд ғана талданады. Аудио серверде файлға жазылмайды, сұраныс кезінде жедел жадта өңделеді. Сервер интернетке аудио жібермейді. Docker image жинау кезеңінде тек модель салмақтары жүктеледі. Интернетке жариялағанда сұраныс жиілігін шектеу және рұқсатсыз пайдаланудан қорғау қажет: әдепкіде аутентификация/рейт-лимит жоқ. Docker жергілікті де, Render-де де іске қосылады.
 
-## 6. Тәуелсіз бағалау
-
-```powershell
-python scripts/evaluate.py --manifest data/test.csv --model spoofceleb --scores-out data/test_scores.csv
-```
-
-Есептелетін метрикалар: accuracy, precision, recall, F1 және екі класс болғанда EER.
-**Evaluation файлын оқытуға немесе үздік модельді таңдау үшін пайдаланбаңыз.**
-Бастапқы 0.5 шегі калибрленбеген; ол нақты пайыздық сенімділік емес.
-
-## 7. GitHub / Render / Hugging Face Spaces
-
-Репозиторийге кодты жариялауға болады, бірақ SpoofCeleb деректерінің өзін жарияламаңыз.
-Оқытылған модель checkpoint-ін серверге жеткізбесеңіз, сайт жұмысын көрсетеді,
-бірақ **дауыс талдауы қолжетімсіз болады**. `models/spoofceleb_cnn.pt` — қажет файл.
-
-Checkpoint-ті таратуға құқық бар екеніне көз жеткізіңіз. Өз репозиторийіңізге қосқыңыз келсе:
-
-```bash
-git add -f models/spoofceleb_cnn.pt
-```
-
-Сосын Render-да Docker runtime немесе Hugging Face Docker Space арқылы жариялаңыз.
-`Dockerfile` модельді **автоматты түрде жүктемейді, оқытпайды және жасанды модель құрмайды**.
-PyTorch-тың CPU нұсқасы да бұлтты серверде едәуір жад алуы мүмкін.
-
-**Қауіпсіздік:** көпшілікке арналған сайтта жүктемені шектеу, модельдің қатесін тексеру,
-деректер құпиялылығы және жеке адамның келісімі ескерілуі тиіс.
-
-## 8. Жоба файлдары
+## 7. Жоба құрылымы
 
 ```
-app/main.py                    FastAPI API
-app/engine.py                  аудионы өңдеу + SpoofCeleb checkpoint inference
-app/custom_cnn.py              Mel-спектрограмма және MelCNN архитектурасы
-app/static/                    веб-интерфейс
-scripts/prepare_spoofceleb.py  рұқсатпен алынған train/dev/eval файлдары → CSV
-scripts/train_spoofceleb.py    SpoofCeleb → PyTorch checkpoint
-scripts/evaluate.py            тәуелсіз test + EER
-models/                        дайын модельді осында орналастыру
-Dockerfile                     орналастыру
+voiceguard_site/
+  app/
+    main.py              FastAPI endpoint
+    engine.py            FFmpeg, ONNX және CNN inference
+    custom_cnn.py        Optional convolutional network
+    static/
+      index.html         Веб-бет
+      style.css          Интерфейс
+      app.js             Файл жүктеу, waveform, API
+  scripts/
+    download_model.py    AASIST ONNX жүктеу
+    make_manifest.py     ASVspoof 2019 протоколын CSV-ге айналдыру
+    train_cnn.py         Жеке CNN моделін оқыту
+    evaluate.py          Test көрсеткіштері/EER
+  models/                Модельдер осында жүктеледі
+  tests/                 Серверлік тесттер
+  requirements.txt
+  requirements-train.txt
+  install.bat
+  start.bat
 ```
 
-**Шектеу:** бұл телефон алаяқтығын немесе адамның жеке басын дәлелдейтін жүйе емес.
-Бұл — аудиодағы синтетикалық белгілерді бағалайтын дипломдық зерттеу прототипі.
+## 8. Ғылыми дереккөздер
+
+- Jung et al. — **AASIST**, https://arxiv.org/abs/2110.01200
+- Pretrained AASIST ONNX https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST
+- ASVspoof 2019 challenge https://www.asvspoof.org/index2019.html
+- ASVspoof 2021 challenge https://www.asvspoof.org/index2021.html
+- ASVspoof 2021 model baselines https://github.com/asvspoof-challenge/2021
+- SpoofCeleb dataset https://huggingface.co/datasets/jungjee/spoofceleb
+
+**Лицензия туралы:** AASIST моделінің дереккөзінде MIT лицензиясы көрсетілген. Dataset материалдарын қолданғанда әрқайсысының лицензиясын және дереккөзге сілтеме беру талабын сақтаңыз.
