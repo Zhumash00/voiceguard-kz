@@ -1,9 +1,12 @@
+.git
 .venv
 __pycache__
-*.pyc
 .pytest_cache
-.git
+*.pyc
+tests/
+data/
 *.zip
-data
-tests
 .env
+models/*.pt
+models/*.onnx
+models/whisper-tiny/
