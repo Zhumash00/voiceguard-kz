@@ -206,3 +206,478 @@ function init() {
   loadStatus();
 }
 document.addEventListener('DOMContentLoaded',init);
+
+
+/* =========================================
+   VOICEGUARD KZ - AUDIO DENOISE
+========================================= */
+
+const denoiseFileInput = $("denoise-file-input");
+const denoiseFileList = $("denoise-file-list");
+const denoiseButton = $("denoiseButton");
+const denoiseStrength = $("denoiseStrength");
+const strengthValue = $("strengthValue");
+const noiseSeconds = $("noiseSeconds");
+const denoiseStatus = $("denoiseStatus");
+const denoiseResults = $("denoiseResults");
+
+const denoiseObjectUrls = [];
+
+const AUDIO_EXTENSIONS = [
+    ".wav", ".flac", ".mp3", ".m4a",
+    ".ogg", ".aac", ".opus", ".webm"
+];
+
+/* Файл кеңейтімін анықтау */
+
+function getExtension(filename) {
+    const parts = filename.toLowerCase().split(".");
+    return parts.length > 1 ? "." + parts.pop() : "";
+}
+
+function isZip(filename) {
+    return getExtension(filename) === ".zip";
+}
+
+function isAudio(filename) {
+    return AUDIO_EXTENSIONS.includes(getExtension(filename));
+}
+
+/* Уақытша URL мекенжайларын босату */
+
+function clearDenoiseResults() {
+    denoiseObjectUrls.forEach(url => URL.revokeObjectURL(url));
+    denoiseObjectUrls.length = 0;
+
+    denoiseResults.replaceChildren();
+}
+
+/* Файлдарды көрсету */
+
+function updateDenoiseFileList() {
+
+    const files = Array.from(denoiseFileInput.files || []);
+
+    denoiseFileList.replaceChildren();
+
+    if (!files.length) {
+        denoiseFileList.textContent = "Файлдар таңдалмаған";
+        return;
+    }
+
+    const title = document.createElement("strong");
+    title.textContent = `Таңдалған файлдар: ${files.length}`;
+
+    denoiseFileList.appendChild(title);
+
+    files.forEach(file => {
+
+        const item = document.createElement("div");
+
+        item.style.marginTop = "8px";
+        item.style.color = "#a9c4d2";
+
+        const size = (file.size / 1048576).toFixed(2);
+
+        item.textContent = `${file.name} (${size} МБ)`;
+
+        denoiseFileList.appendChild(item);
+
+    });
+
+}
+
+/* Шу басу күшінің көрсеткіші */
+
+if (denoiseStrength && strengthValue) {
+
+    denoiseStrength.addEventListener("input", () => {
+
+        const value = Number(denoiseStrength.value);
+
+        strengthValue.textContent =
+            `${Math.round(value * 100)}%`;
+
+    });
+
+}
+
+/* Файл таңдалған кезде */
+
+if (denoiseFileInput) {
+
+    denoiseFileInput.addEventListener("change", () => {
+
+        updateDenoiseFileList();
+
+        clearDenoiseResults();
+
+        denoiseStatus.textContent = "";
+
+    });
+
+}
+
+/* Сервер қатесін оқу */
+
+async function getApiError(response, defaultMessage) {
+
+    try {
+
+        const data = await response.json();
+
+        return typeof data.detail === "string"
+            ? data.detail
+            : defaultMessage;
+
+    } catch {
+
+        return defaultMessage;
+
+    }
+
+}
+
+/* Бір аудионы тазарту */
+
+async function denoiseSingleFile(file, strength, noiseSec) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const response = await fetch(
+        `/api/denoise?strength=${strength}&noise_sec=${noiseSec}`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+            await getApiError(
+                response,
+                "Аудионы тазарту мүмкін болмады."
+            )
+        );
+
+    }
+
+    return await response.blob();
+
+}
+
+/* Бірнеше аудионы тазарту */
+
+async function denoiseBatch(files, strength, noiseSec) {
+
+    const formData = new FormData();
+
+    files.forEach(file => {
+
+        formData.append("files", file);
+
+    });
+
+    const response = await fetch(
+        `/api/denoise/batch?strength=${strength}&noise_sec=${noiseSec}`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+            await getApiError(
+                response,
+                "Бірнеше аудионы тазарту мүмкін болмады."
+            )
+        );
+
+    }
+
+    return await response.blob();
+
+}
+
+/* ZIP архивін тазарту */
+
+async function denoiseZip(file, strength, noiseSec) {
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    const response = await fetch(
+        `/api/denoise/zip?strength=${strength}&noise_sec=${noiseSec}`,
+        {
+            method: "POST",
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+            await getApiError(
+                response,
+                "ZIP архивін өңдеу мүмкін болмады."
+            )
+        );
+
+    }
+
+    return await response.blob();
+
+}
+
+/* Жүктеу батырмасын жасау */
+
+function createDownload(blob, filename, title) {
+
+    const url = URL.createObjectURL(blob);
+
+    denoiseObjectUrls.push(url);
+
+    const container = document.createElement("div");
+    container.className = "denoise-result";
+
+    const heading = document.createElement("h3");
+    heading.textContent = title;
+
+    const download = document.createElement("a");
+
+    download.href = url;
+    download.download = filename;
+    download.className = "download-button";
+    download.textContent = "Тазартылған файлды жүктеу";
+
+    container.append(heading, download);
+
+    denoiseResults.appendChild(container);
+
+}
+
+/* Тазартылған аудионы ойнату */
+
+function addAudioResult(originalName, blob) {
+
+    const url = URL.createObjectURL(blob);
+
+    denoiseObjectUrls.push(url);
+
+    const container = document.createElement("div");
+
+    container.className = "denoise-result";
+
+    const title = document.createElement("h3");
+
+    title.textContent = `${originalName} — тазартылған`;
+
+    const audio = document.createElement("audio");
+
+    audio.controls = true;
+    audio.preload = "metadata";
+    audio.src = url;
+
+    const download = document.createElement("a");
+
+    download.href = url;
+
+    download.download =
+        originalName.replace(/\.[^/.]+$/, "") + "_clean.wav";
+
+    download.textContent = "Тазартылған аудионы жүктеу";
+
+    download.className = "download-button";
+
+    container.append(title, audio, download);
+
+    denoiseResults.appendChild(container);
+
+}
+
+/* =========================================
+   НЕГІЗГІ ШУДЫ ТАЗАРТУ ФУНКЦИЯСЫ
+========================================= */
+
+async function processDenoise() {
+
+    const files = Array.from(
+        denoiseFileInput.files || []
+    );
+
+    if (!files.length) {
+
+        denoiseStatus.textContent =
+            "Алдымен аудио файл немесе ZIP архивін таңдаңыз.";
+
+        return;
+
+    }
+
+    const invalidFiles = files.filter(
+        file => !isAudio(file.name) && !isZip(file.name)
+    );
+
+    if (invalidFiles.length) {
+
+        denoiseStatus.textContent =
+            "Қолдау көрсетілмейтін файл форматы таңдалды.";
+
+        return;
+
+    }
+
+    if (files.some(file => file.size === 0)) {
+
+        denoiseStatus.textContent =
+            "Таңдалған файлдардың ішінде бос файл бар.";
+
+        return;
+
+    }
+
+    const strength = Number(denoiseStrength.value);
+    const noiseSec = Number(noiseSeconds.value);
+
+    if (!Number.isFinite(strength) || strength < 0 || strength > 1) {
+
+        denoiseStatus.textContent =
+            "Шу басу күшінің мәні дұрыс емес.";
+
+        return;
+
+    }
+
+    if (!Number.isFinite(noiseSec) || noiseSec < 0 || noiseSec > 10) {
+
+        denoiseStatus.textContent =
+            "Шу үлгісінің ұзақтығы 0–10 секунд аралығында болуы керек.";
+
+        return;
+
+    }
+
+    const zipFiles = files.filter(file => isZip(file.name));
+
+    const audioFiles = files.filter(file => isAudio(file.name));
+
+    denoiseButton.disabled = true;
+
+    clearDenoiseResults();
+
+    denoiseStatus.textContent =
+        "Аудио өңделуде. Күте тұрыңыз...";
+
+    try {
+
+        let completed = 0;
+
+        const total = zipFiles.length + (audioFiles.length ? 1 : 0);
+
+        /* ZIP архивтерін өңдеу */
+
+        for (const zipFile of zipFiles) {
+
+            denoiseStatus.textContent =
+                `ZIP архиві өңделуде: ${zipFile.name}`;
+
+            const result = await denoiseZip(
+                zipFile,
+                strength,
+                noiseSec
+            );
+
+            const outputName =
+                zipFile.name.replace(/\.zip$/i, "") +
+                "_clean.zip";
+
+            createDownload(
+                result,
+                outputName,
+                `${zipFile.name} — тазартылған архив`
+            );
+
+            completed++;
+
+        }
+
+        /* Жеке аудиоларды өңдеу */
+
+        if (audioFiles.length === 1) {
+
+            denoiseStatus.textContent =
+                "Аудио тазартылуда...";
+
+            const file = audioFiles[0];
+
+            const result = await denoiseSingleFile(
+                file,
+                strength,
+                noiseSec
+            );
+
+            addAudioResult(file.name, result);
+
+            completed++;
+
+        }
+
+        /* Бірнеше аудио файлды өңдеу */
+
+        else if (audioFiles.length > 1) {
+
+            denoiseStatus.textContent =
+                `${audioFiles.length} аудио файл өңделуде...`;
+
+            const result = await denoiseBatch(
+                audioFiles,
+                strength,
+                noiseSec
+            );
+
+            createDownload(
+                result,
+                "voiceguard_clean_audio.zip",
+                "Барлық тазартылған аудиолар"
+            );
+
+            completed++;
+
+        }
+
+        if (completed === total) {
+
+            denoiseStatus.textContent =
+                "Шуды тазарту сәтті аяқталды.";
+
+        }
+
+    } catch (error) {
+
+        denoiseStatus.textContent =
+            `Қате: ${error.message}`;
+
+    } finally {
+
+        denoiseButton.disabled = false;
+
+    }
+
+}
+
+/* Батырмаға оқиға тіркеу */
+
+if (denoiseButton) {
+
+    denoiseButton.addEventListener(
+        "click",
+        processDenoise
+    );
+
+}

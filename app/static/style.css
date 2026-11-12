@@ -22,3 +22,347 @@
 .pause-segments{display:flex;flex-wrap:wrap;gap:7px}
 .pause-jump{background:#102f3e;border:1px solid #30596a;border-radius:7px;padding:7px 9px;color:#b4eadd;font-size:11px;cursor:pointer;font-variant-numeric:tabular-nums}
 @media(max-width:470px){.timeline-item{grid-template-columns:95px 1fr 46px;gap:6px;padding:8px 5px}.timeline-range{font-size:10px}.explanation-box,.timeline-panel,.acoustic-panel{padding:12px}}
+
+
+/* =========================================
+   VOICEGUARD KZ - AUDIO DENOISE SECTION
+========================================= */
+
+.denoise-section {
+    padding-top: 25px;
+    padding-bottom: 110px;
+}
+
+/* Негізгі жұмыс панелі */
+
+.denoise-workbench {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: #101d2b;
+    border: 1px solid #304455;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 25px 80px #00000021;
+}
+
+/* Файл жүктеу панелі */
+
+.denoise-upload-panel {
+    padding: 30px;
+    border-right: 1px solid #293d4d;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    min-height: 350px;
+    background: radial-gradient(
+        circle at center,
+        #173b4560,
+        transparent 70%
+    );
+}
+
+.denoise-upload-icon {
+    width: 65px;
+    height: 65px;
+    display: grid;
+    place-items: center;
+    border-radius: 17px;
+    color: var(--teal);
+    background: #1c414b;
+    border: 1px solid #2d746e;
+    margin-bottom: 17px;
+}
+
+.denoise-upload-panel h3 {
+    font-size: 17px;
+    margin: 0 0 7px;
+}
+
+.denoise-upload-panel p {
+    font-size: 12px;
+    color: #8ea4b8;
+    max-width: 330px;
+    line-height: 1.8;
+    margin: 0 0 20px;
+}
+
+.denoise-file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 12px 21px;
+    background: #173b45;
+    color: var(--teal);
+    border: 1px solid #367b78;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.denoise-file-label:hover {
+    background: #20505a;
+    border-color: var(--teal);
+    transform: translateY(-2px);
+}
+
+.denoise-file-label span {
+    font-size: 18px;
+}
+
+.denoise-formats {
+    color: #718ba0;
+    font-size: 10px;
+    letter-spacing: .7px;
+    margin-top: 19px;
+}
+
+/* Таңдалған файлдар */
+
+.denoise-file-list {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 17px;
+    padding: 12px;
+    border: 1px solid #294657;
+    border-radius: 8px;
+    background: #112536;
+    color: #8fa8ba;
+    font-size: 11px;
+    text-align: left;
+    overflow-wrap: anywhere;
+}
+
+/* Параметрлер панелі */
+
+.denoise-settings-panel {
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.denoise-panel-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 23px;
+    border-bottom: 1px solid #293d4d;
+    margin-bottom: 25px;
+}
+
+.settings-kicker {
+    font-size: 9px;
+    letter-spacing: 1.7px;
+    font-weight: 800;
+    color: var(--teal);
+}
+
+.denoise-panel-heading h3 {
+    font-size: 17px;
+    margin: 5px 0 0;
+}
+
+.settings-icon {
+    width: 39px;
+    height: 39px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #315365;
+    background: #173444;
+    border-radius: 9px;
+    color: var(--teal);
+    font-size: 19px;
+}
+
+/* Баптаулар */
+
+.denoise-setting {
+    margin-bottom: 27px;
+}
+
+.setting-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+.denoise-setting label {
+    display: block;
+    color: #b4c7d5;
+    font-size: 12px;
+    font-weight: 650;
+    margin-bottom: 10px;
+}
+
+.setting-label-row label {
+    margin-bottom: 0;
+}
+
+.setting-label-row strong {
+    color: var(--teal);
+    font-size: 14px;
+}
+
+.denoise-setting input[type="range"] {
+    width: 100%;
+    accent-color: var(--teal);
+    cursor: pointer;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #728ba1;
+    margin-top: 7px;
+}
+
+/* Сан енгізу */
+
+.number-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.number-input-wrap input {
+    width: 110px;
+    padding: 11px 13px;
+    background: #14293a;
+    border: 1px solid #304d61;
+    border-radius: 8px;
+    color: #e4f0f5;
+    font: inherit;
+    outline: none;
+}
+
+.number-input-wrap input:focus {
+    border-color: var(--teal);
+}
+
+.number-input-wrap span {
+    color: #829bae;
+    font-size: 11px;
+}
+
+.noise-setting small {
+    display: block;
+    color: #718ba0;
+    font-size: 10px;
+    line-height: 1.7;
+    margin-top: 9px;
+}
+
+/* Тазарту батырмасы */
+
+.denoise-button {
+    width: 100%;
+    min-height: 48px;
+    margin-top: 5px;
+}
+
+.denoise-status {
+    min-height: 25px;
+    margin-top: 14px;
+    color: #8ca9b9;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+/* Нәтижелер */
+
+.denoise-results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.denoise-result {
+    min-width: 0;
+    padding: 20px;
+    background: #101f30;
+    border: 1px solid #304455;
+    border-radius: 12px;
+}
+
+.denoise-result h3 {
+    color: #e4f3f5;
+    font-size: 14px;
+    margin: 0 0 12px;
+    overflow-wrap: anywhere;
+}
+
+.denoise-result audio {
+    display: block;
+    width: 100%;
+    margin: 13px 0;
+    height: 38px;
+}
+
+.download-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 15px;
+    margin-top: 9px;
+    border-radius: 7px;
+    background: #173c45;
+    border: 1px solid #367b78;
+    color: #8debd9;
+    font-size: 11px;
+    font-weight: 700;
+    transition: .2s;
+}
+
+.download-button:hover {
+    background: #20515a;
+    border-color: var(--teal);
+}
+
+/* Адаптивті дизайн */
+
+@media(max-width: 750px) {
+
+    .denoise-workbench {
+        grid-template-columns: 1fr;
+    }
+
+    .denoise-upload-panel {
+        border-right: 0;
+        border-bottom: 1px solid #293d4d;
+        min-height: 300px;
+    }
+
+    .denoise-settings-panel {
+        padding: 25px;
+    }
+
+    .denoise-results {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media(max-width: 470px) {
+
+    .denoise-upload-panel,
+    .denoise-settings-panel {
+        padding: 20px 17px;
+    }
+
+    .denoise-panel-heading h3 {
+        font-size: 15px;
+    }
+
+    .denoise-upload-panel h3 {
+        font-size: 15px;
+    }
+
+}

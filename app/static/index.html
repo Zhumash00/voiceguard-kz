@@ -32,7 +32,7 @@
  <div class="section-title-row"><div><div class="section-kicker"><span></span> АУДИОНЫ ТЕКСЕРУ</div><h2>Дауыстық файлды талдау</h2><p>Талдау Docker контейнерінде немесе жарияланған серверде орындалады. Файл тұрақты сақталмайды.</p></div><div class="lab-tag"><svg viewBox="0 0 24 24" width="19" fill="none"><path d="M9 3h6M10 3v7l-5 8a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-8V3M8 16h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> RESEARCH PROTOTYPE</div></div>
  <div class="workbench">
   <div class="panel-upload">
-   <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Аудио файлын таңдау"><div class="drop-glow"></div><div class="upload-icon"><svg width="31" height="31" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><strong>Аудио файлын осында апарыңыз</strong><span>немесе <u>компьютерден таңдаңыз</u></span><small>WAV · MP3 · FLAC · OGG · M4A · OPUS · WEBM</small><small class="limit">20 МБ дейін · алғашқы 30 секунд талданады</small><input id="file-input" type="file" accept=".wav,.mp3,.flac,.ogg,.m4a,.aac,.opus,.webm,audio/*" hidden></div>
+   <div id="dropzone" class="dropzone" role="button" tabindex="0" aria-label="Аудио файлын таңдау"><div class="drop-glow"></div><div class="upload-icon"><svg width="31" height="31" viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><strong>Аудио файлын осында апарыңыз</strong><span>немесе <u>компьютерден таңдаңыз</u></span><small>WAV · MP3 · FLAC · OGG · M4A · OPUS · WEBM</small><small class="limit">20 МБ дейін · алғашқы 30 секунд талданады</small><input id="file-input" type="file" multiple accept=".wav,.mp3,.flac,.ogg,.m4a,.aac,.zip,.opus,.webm,audio/*" hidden></div>
    <div id="file-preview" class="file-preview hidden"><div class="file-top"><div class="audio-file-icon"><svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13M9 18c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3Zm11-2c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3Z" stroke="currentColor" stroke-width="1.6"/></svg></div><div class="file-copy"><strong id="file-name">audio.wav</strong><span id="file-size">0 MB</span></div><button class="icon-button" id="clear-file" title="Файлды өшіру" type="button">×</button></div><canvas id="waveform" height="86" aria-label="Аудио толқыны"></canvas><audio id="audio-player" controls preload="metadata"></audio></div>
    <div class="analyze-controls"><label for="model-select">Нейрожелілік модель</label><div class="select-wrap"><select id="model-select"><option value="aasist">AASIST · дайын нейрожелі (ұсынылады)</option><option value="cnn">Mel-CNN · өзім оқытқан модель</option></select><span>⌄</span></div><button class="primary-btn analyze-btn" id="analyze-btn" type="button" disabled><span id="analyze-btn-text">Файл таңдап, талдауды бастаңыз</span><svg width="18" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><p class="privacy-note"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11ZM9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6"/></svg>Файл осы сервердің жадында өңделеді, дерекқорға жазылмайды.</p></div>
   </div>
@@ -62,6 +62,167 @@
   </div>
  </div>
 </section>
+
+<section id="denoise" class="denoise-section container">
+
+    <div class="section-title-row">
+        <div>
+            <div class="section-kicker">
+                <span></span>
+                AUDIO PROCESSING
+            </div>
+
+            <h2>Аудионы шудан тазарту</h2>
+
+            <p>
+                Аудиодағы фондық шуды азайтып, сөйлеу сапасын жақсартыңыз.
+                Бірнеше файлды немесе ZIP архивін жүктеуге болады.
+            </p>
+        </div>
+
+        <div class="lab-tag">
+            AUDIO ENHANCEMENT
+        </div>
+    </div>
+
+    <div class="denoise-workbench">
+
+        <div class="denoise-upload-panel">
+
+            <div class="denoise-upload-icon">
+                <svg width="29" height="29" viewBox="0 0 24 24"
+                     fill="none">
+                    <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5
+                    M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11
+                    a1.5 1.5 0 0 0 1.5-1.5V16"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <h3>Аудио файлдарды жүктеу</h3>
+
+            <p>
+                Бір немесе бірнеше аудио файлды таңдаңыз.
+                ZIP архиві де қолдау табады.
+            </p>
+
+            <label for="denoise-file-input"
+                   class="denoise-file-label">
+                <span>＋</span>
+                Файлдарды таңдау
+            </label>
+
+            <input
+                type="file"
+                id="denoise-file-input"
+                accept=".wav,.flac,.mp3,.m4a,.ogg,.aac,.opus,.webm,.zip"
+                multiple
+                hidden
+            />
+
+            <div class="denoise-formats">
+                WAV · MP3 · FLAC · OGG · M4A · ZIP
+            </div>
+
+            <div id="denoise-file-list"
+                 class="denoise-file-list">
+                Файлдар таңдалмаған
+            </div>
+
+        </div>
+
+        <div class="denoise-settings-panel">
+
+            <div class="denoise-panel-heading">
+                <div>
+                    <span class="settings-kicker">CONFIGURATION</span>
+                    <h3>Шуды тазарту параметрлері</h3>
+                </div>
+                <span class="settings-icon">⚙</span>
+            </div>
+
+            <div class="denoise-setting">
+
+                <div class="setting-label-row">
+                    <label for="denoiseStrength">
+                        Шу басу күші
+                    </label>
+
+                    <strong id="strengthValue">100%</strong>
+                </div>
+
+                <input
+                    type="range"
+                    id="denoiseStrength"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="1"
+                >
+
+                <div class="range-labels">
+                    <span>Әлсіз</span>
+                    <span>Күшті</span>
+                </div>
+
+            </div>
+
+            <div class="denoise-setting noise-setting">
+
+                <label for="noiseSeconds">
+                    Алғашқы бөліктегі шу үлгісі
+                </label>
+
+                <div class="number-input-wrap">
+                    <input
+                        type="number"
+                        id="noiseSeconds"
+                        min="0"
+                        max="10"
+                        step="0.5"
+                        value="1.5"
+                    >
+                    <span>секунд</span>
+                </div>
+
+                <small>
+                    Аудионың басындағы шуды үлгі ретінде пайдалану уақыты.
+                </small>
+
+            </div>
+
+            <button id="denoiseButton"
+                    class="primary-btn denoise-button"
+                    type="button">
+
+                <span>Шуды тазарту</span>
+
+                <svg width="18" viewBox="0 0 24 24" fill="none">
+                    <path d="m5 12 4 4L19 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"/>
+                </svg>
+
+            </button>
+
+            <div id="denoiseStatus"
+                 class="denoise-status"
+                 aria-live="polite"></div>
+
+        </div>
+
+    </div>
+
+    <div id="denoiseResults"
+         class="denoise-results"></div>
+
+</section>
+
 <section id="technology" class="tech-section"><div class="container"><div class="section-kicker"><span></span> ЖҰМЫС ПРИНЦИПІ</div><div class="section-heading"><h2>Бір файл. Үш қадам.</h2><p>AASIST және Whisper Tiny модельдері Docker серверінде іске қосылады; жүктелген аудио басқа API-ға жіберілмейді.</p></div><div class="steps"><article class="step"><div class="step-head"><span>01</span><svg width="25" viewBox="0 0 24 24" fill="none"><path d="M5 8v8m4-13v18m4-14v10m4-14v18m4-12v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div><h3>Аудионы жүктеу</h3><p>Файл декодталып, 16 kHz моно сигналға келтіріледі. Ұзақ жазбадан бірнеше бөлік алынады.</p></article><article class="step"><div class="step-head"><span>02</span><svg width="25" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.7"/><path d="M9 9h6v6H9zm3-5V1m0 22v-3M4 12H1m22 0h-3" stroke="currentColor" stroke-width="1.5"/></svg></div><h3>Нейрожелілік талдау</h3><p>AASIST дыбыстың спектрлік және уақыттық ерекшеліктерін графтық attention қабаттарында талдайды.</p></article><article class="step"><div class="step-head"><span>03</span><svg width="25" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="m8 12 3 3 5-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>Нәтиже мен түсіндірме</h3><p>Жүйе болжамды тілді, уақыт бойынша нейрожелі бағаларын және байқалған ықтимал паузаларды бөлек көрсетеді.</p></article></div><div class="model-info"><div><div class="info-eyebrow">БАЗАЛЫҚ АРХИТЕКТУРА</div><strong>AASIST</strong><p>Audio Anti-Spoofing using Integrated Spectro-Temporal Graph Attention Networks</p></div><div class="model-stats"><div><strong>ASVspoof 2019 LA</strong><span>Оқытылған базасы</span></div><div><strong>ONNX / CPU</strong><span>Орындау ортасы</span></div><div><strong>≈4.04 с</strong><span>Бір фрагмент</span></div></div><a href="https://huggingface.co/SpeechAntiSpoofingBenchmarks/AASIST" target="_blank" rel="noopener noreferrer">Модель дереккөзі ↗</a></div></div></section>
 <section id="datasets" class="datasets-section container"><div class="section-kicker"><span></span> ҒЫЛЫМИ НЕГІЗ</div><div class="section-heading"><h2>Ашық деректер жиындары</h2><p>Бұл жоба құжаттағы сілтемелерге сүйенеді. AASIST дайын моделі ASVspoof 2019 LA-мен оқытылған; қалған жиындар қосымша тексеруге арналған.</p></div><div class="dataset-grid"><a class="dataset-card" href="https://zenodo.org/records/6906306" target="_blank" rel="noopener noreferrer"><span class="dataset-type">TRAIN / ORIGINAL</span><h3>ASVspoof 2019</h3><p>Табиғи, TTS және voice conversion сөйлеу үлгілері. Дайын AASIST осы базаның LA бөлігінде оқытылған.</p><span class="dataset-arrow">Zenodo ↗</span></a><a class="dataset-card" href="https://zenodo.org/records/4837263" target="_blank" rel="noopener noreferrer"><span class="dataset-type">EVALUATION</span><h3>ASVspoof 2021 LA</h3><p>Жаңа шабуылдар мен байланыс арналары, кодтау жағдайларындағы тексеру жиынтығы.</p><span class="dataset-arrow">Zenodo ↗</span></a><a class="dataset-card" href="https://zenodo.org/records/4835108" target="_blank" rel="noopener noreferrer"><span class="dataset-type">EVALUATION</span><h3>ASVspoof 2021 DF</h3><p>Шынайы және синтетикалық дауыс үлгілері бар deepfake evaluation базасы.</p><span class="dataset-arrow">Zenodo ↗</span></a><a class="dataset-card" href="https://huggingface.co/datasets/jungjee/spoofceleb" target="_blank" rel="noopener noreferrer"><span class="dataset-type">REAL-WORLD SPEECH</span><h3>SpoofCeleb</h3><p>VoxCeleb сөйлеуі негізінде жасалған, түрлі акустикалық ортаға жақын deepfake деректері.</p><span class="dataset-arrow">Hugging Face ↗</span></a></div></section>
 <section class="notice-section container"><div class="notice"><span>!</span><div><strong>Зертханалық прототип туралы</strong><p>Бұл сервис толыққанды алаяқтықты анықтау жүйесі емес: ол аудионың синтетикалық белгілерін ғана бағалайды. AASIST басқа деректерде, тілдерде және телефон арналары жағдайында елеулі қате жіберуі мүмкін. Нәтижеге сүйеніп біреуді айыптамаңыз, басқа тексеру тәсілдерін қолданыңыз.</p></div></div></section>
